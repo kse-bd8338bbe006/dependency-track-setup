@@ -1,0 +1,69 @@
+name: Upload SBOM to Dependency-Track
+
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        description: "Project name in Dependency-Track"
+        required: true
+        type: string
+      project-version:
+        description: "Project version in Dependency-Track"
+        required: true
+        type: string
+      scan-path:
+        description: "Path to scan for SBOM generation"
+        required: false
+        type: string
+        default: "."
+    secrets:
+      dtrack-url:
+        description: "Dependency-Track API URL"
+        required: true
+      dtrack-api-key:
+        description: "Dependency-Track API key"
+        required: true
+
+jobs:
+  upload-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Generate SBOM
+        run: trivy fs --format cyclonedx --output sbom.json ${{ inputs.scan-path }}
+
+      - name: Upload SBOM to Dependency-Track
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "${{ secrets.dtrack-url }}/api/v1/bom" \
+            -H "X-Api-Key: ${{ secrets.dtrack-api-key }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"projectName\": \"${{ inputs.project-name }}\",
+              \"projectVersion\": \"${{ inputs.project-version }}\",
+              \"autoCreate\": true,
+              \"bom\": \"$(base64 -w0 sbom.json)\"
+            }")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -1)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "Upload successful: $BODY"
+          else
+            echo "Upload failed (HTTP $HTTP_CODE): $BODY" >&2
+            exit 1
+          fi
+
+      - name: Upload SBOM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json

@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: Dependency-Track
+    type: postgres
+    url: postgres:5432
+    database: dtrack
+    user: dtrack
+    secureJsonData:
+      password: dtrack
+    jsonData:
+      database: dtrack
+      sslmode: disable
+      postgresVersion: 1600
+    isDefault: true
+    editable: true

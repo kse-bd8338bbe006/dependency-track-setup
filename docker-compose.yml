@@ -1,0 +1,73 @@
+services:
+  dtrack-apiserver:
+    image: dependencytrack/apiserver:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ALPINE_DATABASE_MODE: external
+      ALPINE_DATABASE_URL: jdbc:postgresql://postgres:5432/dtrack
+      ALPINE_DATABASE_DRIVER: org.postgresql.Driver
+      ALPINE_DATABASE_USERNAME: dtrack
+      ALPINE_DATABASE_PASSWORD: dtrack
+      JAVA_OPTIONS: "-Xmx8g"
+    deploy:
+      resources:
+        limits:
+          memory: 12288m
+        reservations:
+          memory: 8192m
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8081:8080"
+    volumes:
+      - dtrack-data:/data
+    restart: unless-stopped
+
+  dtrack-frontend:
+    image: dependencytrack/frontend:latest
+    depends_on:
+      - dtrack-apiserver
+    environment:
+      API_BASE_URL: http://localhost:8081
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - postgres
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: dtrack
+      POSTGRES_USER: dtrack
+      POSTGRES_PASSWORD: dtrack
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dtrack -d dtrack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  dtrack-data:
+  grafana-data:

@@ -1,0 +1,333 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "orange", "value": 0.05 },
+              { "color": "red", "value": 0.1 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "epss_score" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "max", "value": 1 },
+              { "id": "min", "value": 0 },
+              { "id": "displayName", "value": "EPSS Score" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "epss_percentile" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "max", "value": 1 },
+              { "id": "min", "value": 0 },
+              { "id": "displayName", "value": "EPSS Percentile" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "cvss_v3" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "max", "value": 10 },
+              { "id": "min", "value": 0 },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 4 },
+                { "color": "orange", "value": 7 },
+                { "color": "red", "value": 9 }
+              ]}},
+              { "id": "displayName", "value": "CVSS v3" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "priority" },
+            "properties": [
+              { "id": "displayName", "value": "Priority" },
+              { "id": "mappings", "value": [
+                { "options": { "CRITICAL": { "color": "red", "index": 0, "text": "CRITICAL" } }, "type": "value" },
+                { "options": { "HIGH": { "color": "orange", "index": 1, "text": "HIGH" } }, "type": "value" },
+                { "options": { "MEDIUM": { "color": "yellow", "index": 2, "text": "MEDIUM" } }, "type": "value" },
+                { "options": { "LOW": { "color": "green", "index": 3, "text": "LOW" } }, "type": "value" }
+              ]},
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": true, "enablePagination": true, "fields": "", "reducer": ["count"], "show": true },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "EPSS Score" }]
+      },
+      "title": "Vulnerabilities Prioritized by EPSS Score",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  v.\"VULNID\" AS vuln_id,\n  v.\"SEVERITY\" AS severity,\n  ROUND(CAST(v.\"EPSSSCORE\" AS numeric), 5) AS epss_score,\n  ROUND(CAST(v.\"EPSSPERCENTILE\" AS numeric), 5) AS epss_percentile,\n  v.\"CVSSV3BASESCORE\" AS cvss_v3,\n  p.\"NAME\" AS project,\n  p.\"VERSION\" AS version,\n  c.\"NAME\" AS component,\n  c.\"VERSION\" AS component_version,\n  CASE\n    WHEN v.\"EPSSSCORE\" > 0.1 THEN 'CRITICAL'\n    WHEN v.\"EPSSSCORE\" > 0.05 THEN 'HIGH'\n    WHEN v.\"EPSSSCORE\" > 0.01 THEN 'MEDIUM'\n    ELSE 'LOW'\n  END AS priority,\n  v.\"PUBLISHED\" AS published\nFROM \"VULNERABILITY\" v\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"VULNERABILITY_ID\" = v.\"ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = cv.\"COMPONENT_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE v.\"EPSSSCORE\" IS NOT NULL\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\nORDER BY v.\"EPSSSCORE\" DESC",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "CRITICAL" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "HIGH" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "MEDIUM" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "LOW" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "id": 2,
+      "options": {
+        "displayLabels": ["name", "value"],
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Vulnerabilities by EPSS Priority",
+      "type": "piechart",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  CASE\n    WHEN v.\"EPSSSCORE\" > 0.1 THEN 'CRITICAL'\n    WHEN v.\"EPSSSCORE\" > 0.05 THEN 'HIGH'\n    WHEN v.\"EPSSSCORE\" > 0.01 THEN 'MEDIUM'\n    ELSE 'LOW'\n  END AS priority,\n  COUNT(*) AS count\nFROM \"VULNERABILITY\" v\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"VULNERABILITY_ID\" = v.\"ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = cv.\"COMPONENT_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE v.\"EPSSSCORE\" IS NOT NULL\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\nGROUP BY priority\nORDER BY count DESC",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-RdYlGr", "reverse": true },
+          "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisLabel": "EPSS Score", "scaleDistribution": { "type": "linear" } },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 12 },
+      "id": 3,
+      "options": {
+        "dims": { "x": "cvss_v3", "text": "vuln_id" },
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "series": [],
+        "seriesMapping": "auto",
+        "tooltip": { "mode": "single" }
+      },
+      "title": "CVSS vs EPSS Scatter Plot",
+      "type": "xychart",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  v.\"VULNID\" AS vuln_id,\n  COALESCE(v.\"CVSSV3BASESCORE\", 0) AS cvss_v3,\n  ROUND(CAST(v.\"EPSSSCORE\" AS numeric), 5) AS epss_score\nFROM \"VULNERABILITY\" v\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"VULNERABILITY_ID\" = v.\"ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = cv.\"COMPONENT_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE v.\"EPSSSCORE\" IS NOT NULL\n  AND v.\"CVSSV3BASESCORE\" IS NOT NULL\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "id": 4,
+      "options": {
+        "displayLabels": ["name", "value"],
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Vulnerabilities by Project",
+      "type": "piechart",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  COUNT(DISTINCT v.\"ID\") AS count\nFROM \"VULNERABILITY\" v\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"VULNERABILITY_ID\" = v.\"ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = cv.\"COMPONENT_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE v.\"EPSSSCORE\" IS NOT NULL\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\nGROUP BY project\nORDER BY count DESC",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 1 },
+            { "color": "red", "value": 5 }
+          ]}
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 12, "y": 20 },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "High EPSS (>10%)",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT v.\"ID\") AS count\nFROM \"VULNERABILITY\" v\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"VULNERABILITY_ID\" = v.\"ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = cv.\"COMPONENT_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE v.\"EPSSSCORE\" > 0.1\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 1 },
+            { "color": "orange", "value": 10 }
+          ]}
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 16, "y": 20 },
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Medium EPSS (1-10%)",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT v.\"ID\") AS count\nFROM \"VULNERABILITY\" v\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"VULNERABILITY_ID\" = v.\"ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = cv.\"COMPONENT_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE v.\"EPSSSCORE\" > 0.01 AND v.\"EPSSSCORE\" <= 0.1\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null }
+          ]}
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 20 },
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "title": "Low EPSS (<1%)",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT v.\"ID\") AS count\nFROM \"VULNERABILITY\" v\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"VULNERABILITY_ID\" = v.\"ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = cv.\"COMPONENT_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE v.\"EPSSSCORE\" <= 0.01 AND v.\"EPSSSCORE\" IS NOT NULL\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["dependency-track", "epss", "security"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "includeAll": true,
+        "multi": true,
+        "name": "project",
+        "label": "Project",
+        "query": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "title": "EPSS Vulnerability Prioritization",
+  "uid": "epss-prioritization",
+  "version": 1
+}
