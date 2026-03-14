@@ -1,0 +1,554 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "# Dependency-Track Security Dashboard\nPortfolio overview across **${project_count}** projects and **${component_count}** components",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "rawSql": "SELECT 1",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 3 },
+      "id": 2,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "## Vulnerabilities & EPSS",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 5 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Critical",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED')) AND v.\"SEVERITY\" = 'CRITICAL'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 5 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "High",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED')) AND v.\"SEVERITY\" = 'HIGH'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "yellow", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 5 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Medium",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED')) AND v.\"SEVERITY\" = 'MEDIUM'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 5 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Low",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED')) AND v.\"SEVERITY\" = 'LOW'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "semi-dark-purple", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 5 },
+      "id": 7,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "EPSS > 10%",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED')) AND v.\"EPSSSCORE\" > 0.1",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 5 },
+      "id": 8,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "### [Open Dashboard](/d/epss-prioritization/epss-vulnerability-prioritization)\nCVSS vs EPSS scatter, top exploitable findings, severity breakdown",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 9 },
+      "id": 10,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "## SLA Compliance",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 11 },
+      "id": 11,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Open Findings",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 11 },
+      "id": 12,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "SLA Breached",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED')) AND EXTRACT(DAY FROM NOW() - fa.\"ATTRIBUTED_ON\") > CASE v.\"SEVERITY\" WHEN 'CRITICAL' THEN 7 WHEN 'HIGH' THEN 30 WHEN 'MEDIUM' THEN 90 WHEN 'LOW' THEN 180 ELSE 180 END",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "red", "value": null },
+            { "color": "orange", "value": 50 },
+            { "color": "yellow", "value": 75 },
+            { "color": "green", "value": 90 }
+          ] },
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 11 },
+      "id": 13,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "SLA Compliance",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT CASE WHEN total = 0 THEN 100 ELSE ROUND((1 - overdue::numeric / total) * 100, 1) END AS compliance FROM (SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE EXTRACT(DAY FROM NOW() - fa.\"ATTRIBUTED_ON\") > CASE v.\"SEVERITY\" WHEN 'CRITICAL' THEN 7 WHEN 'HIGH' THEN 30 WHEN 'MEDIUM' THEN 90 WHEN 'LOW' THEN 180 ELSE 180 END) AS overdue FROM \"FINDINGATTRIBUTION\" fa JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\" JOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\" LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = c.\"PROJECT_ID\" WHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 11 },
+      "id": 14,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "### [Open Dashboard](/d/vulnerability-aging/vulnerability-aging-sla)\nAging buckets, SLA status by severity, overdue findings detail, configurable SLA thresholds",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 15 },
+      "id": 20,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "## Licenses",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 17 },
+      "id": 21,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Total Components",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"COMPONENT\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 17 },
+      "id": 22,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Copyleft",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"COMPONENT\" c JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\" JOIN \"LICENSEGROUP_LICENSE\" lgl ON lgl.\"LICENSE_ID\" = l.\"ID\" JOIN \"LICENSEGROUP\" lg ON lg.\"ID\" = lgl.\"LICENSEGROUP_ID\" WHERE lg.\"NAME\" = 'Copyleft'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 17 },
+      "id": 23,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Permissive",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"COMPONENT\" c JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\" JOIN \"LICENSEGROUP_LICENSE\" lgl ON lgl.\"LICENSE_ID\" = l.\"ID\" JOIN \"LICENSEGROUP\" lg ON lg.\"ID\" = lgl.\"LICENSEGROUP_ID\" WHERE lg.\"NAME\" = 'Permissive'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 17 },
+      "id": 24,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "### [Open Dashboard](/d/license-overview/license-overview)\nLicense group distribution, per-license breakdown, license detail table with drill-down to components",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 21 },
+      "id": 30,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "## Outdated Dependencies",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 23 },
+      "id": 31,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Outdated",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"COMPONENT\" c JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'') WHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 23 },
+      "id": 32,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Up to Date",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"COMPONENT\" c JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'') WHERE c.\"VERSION\" = rmc.\"LATEST_VERSION\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "red", "value": null },
+            { "color": "orange", "value": 50 },
+            { "color": "yellow", "value": 75 },
+            { "color": "green", "value": 90 }
+          ] },
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 23 },
+      "id": 33,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Currency Rate",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT ROUND(COUNT(*) FILTER (WHERE c.\"VERSION\" = rmc.\"LATEST_VERSION\")::numeric / NULLIF(COUNT(*), 0) * 100, 1) AS pct FROM \"COMPONENT\" c JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 23 },
+      "id": 34,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "### [Open Dashboard](/d/outdated-dependencies/outdated-dependencies)\nCurrency by project, outdated by ecosystem, major versions behind, vulnerable outdated packages",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 27 },
+      "id": 40,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "## Projects",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "vulnerabilities" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "outdated" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "risk_score" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "last_bom_import" },
+            "properties": [{ "id": "unit", "value": "dateTimeAsIso" }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
+      "id": 41,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": true, "enablePagination": false, "fields": "", "reducer": ["count"], "show": true },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "vulnerabilities" }]
+      },
+      "title": "Project Summary",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  p.\"CLASSIFIER\" AS classifier,\n  (SELECT COUNT(*) FROM \"COMPONENT\" c2 WHERE c2.\"PROJECT_ID\" = p.\"ID\") AS components,\n  (SELECT COUNT(DISTINCT cv.\"VULNERABILITY_ID\") FROM \"COMPONENT\" c3 JOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"COMPONENT_ID\" = c3.\"ID\" WHERE c3.\"PROJECT_ID\" = p.\"ID\") AS vulnerabilities,\n  (SELECT COUNT(*) FROM \"COMPONENT\" c4 JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c4.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c4.\"GROUP\",'') WHERE c4.\"PROJECT_ID\" = p.\"ID\" AND c4.\"VERSION\" != rmc.\"LATEST_VERSION\") AS outdated,\n  p.\"LAST_RISKSCORE\" AS risk_score,\n  p.\"LAST_BOM_IMPORTED\" AS last_bom_import\nFROM \"PROJECT\" p\nWHERE p.\"ACTIVE\" = true\nORDER BY vulnerabilities DESC",
+        "refId": "A"
+      }]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["dependency-track", "home", "security"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "0", "value": "0" },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT COUNT(*)::text FROM \"PROJECT\" WHERE \"ACTIVE\" = true",
+        "name": "project_count",
+        "label": "",
+        "query": "SELECT COUNT(*)::text FROM \"PROJECT\" WHERE \"ACTIVE\" = true",
+        "refresh": 1,
+        "type": "query",
+        "hide": 2
+      },
+      {
+        "current": { "selected": false, "text": "0", "value": "0" },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT COUNT(*)::text FROM \"COMPONENT\"",
+        "name": "component_count",
+        "label": "",
+        "query": "SELECT COUNT(*)::text FROM \"COMPONENT\"",
+        "refresh": 1,
+        "type": "query",
+        "hide": 2
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "title": "Security Portfolio Overview",
+  "uid": "home",
+  "version": 1
+}

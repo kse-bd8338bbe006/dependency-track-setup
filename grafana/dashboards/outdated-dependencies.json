@@ -1,0 +1,378 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 5, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Outdated Components",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nJOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nWHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\"\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 5, "x": 5, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Up to Date",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nJOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nWHERE c.\"VERSION\" = rmc.\"LATEST_VERSION\"\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "red", "value": null },
+            { "color": "orange", "value": 50 },
+            { "color": "yellow", "value": 75 },
+            { "color": "green", "value": 90 }
+          ] },
+          "unit": "percent",
+          "max": 100,
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 5, "x": 10, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Currency Rate",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT ROUND(\n  COUNT(*) FILTER (WHERE c.\"VERSION\" = rmc.\"LATEST_VERSION\")::numeric\n  / NULLIF(COUNT(*), 0) * 100, 1\n) AS pct\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nJOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nWHERE ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "semi-dark-yellow", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 15, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "No Metadata",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nLEFT JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nWHERE rmc.\"ID\" IS NULL\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 5, "x": 19, "y": 0 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Outdated with Vulnerabilities",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COUNT(DISTINCT c.\"ID\") AS count\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nJOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nJOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"COMPONENT_ID\" = c.\"ID\"\nWHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\"\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Outdated" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Up to Date" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "No Metadata" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 5 },
+      "id": 6,
+      "options": {
+        "displayLabels": ["name", "value", "percent"],
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Dependency Currency",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT status, count FROM (\n  SELECT 'Outdated' AS status, COUNT(*) AS count, 1 AS sort\n  FROM \"COMPONENT\" c\n  JOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\n  JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\n  WHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\"\n    AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  UNION ALL\n  SELECT 'Up to Date' AS status, COUNT(*) AS count, 2 AS sort\n  FROM \"COMPONENT\" c\n  JOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\n  JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\n  WHERE c.\"VERSION\" = rmc.\"LATEST_VERSION\"\n    AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  UNION ALL\n  SELECT 'No Metadata' AS status, COUNT(*) AS count, 3 AS sort\n  FROM \"COMPONENT\" c\n  JOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\n  LEFT JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\n  WHERE rmc.\"ID\" IS NULL\n    AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n) sub ORDER BY sort",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisLabel": "", "fillOpacity": 80, "gradientMode": "none", "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "stacking": { "group": "A", "mode": "normal" } },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Outdated" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Up to Date" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 16, "x": 8, "y": 5 },
+      "id": 7,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "normal",
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      },
+      "title": "Currency by Project",
+      "type": "barchart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  COUNT(*) FILTER (WHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\") AS \"Outdated\",\n  COUNT(*) FILTER (WHERE c.\"VERSION\" = rmc.\"LATEST_VERSION\") AS \"Up to Date\"\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nJOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nWHERE ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\nGROUP BY project\nORDER BY project",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "NPM" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "MAVEN" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "PYPI" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "NUGET" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "GEM" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-red", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 15 },
+      "id": 8,
+      "options": {
+        "displayLabels": ["name", "value", "percent"],
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Outdated by Ecosystem",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT rmc.\"REPOSITORY_TYPE\" AS ecosystem, COUNT(*) AS count\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nJOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nWHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\"\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\nGROUP BY rmc.\"REPOSITORY_TYPE\"\nORDER BY count DESC",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 16, "x": 8, "y": 15 },
+      "id": 9,
+      "options": {
+        "displayLabels": ["name", "value"],
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Most Common Outdated Packages (Top 20)",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT sub.package, sub.count FROM (\n  SELECT\n    c.\"NAME\" AS package,\n    COUNT(*) AS count\n  FROM \"COMPONENT\" c\n  JOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\n  JOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\n  WHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\"\n    AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  GROUP BY c.\"NAME\"\n  ORDER BY count DESC\n  LIMIT 20\n) sub ORDER BY sub.count DESC",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "current_version" },
+            "properties": [{ "id": "custom.width", "value": 130 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "latest_version" },
+            "properties": [
+              { "id": "custom.width", "value": 130 },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "ecosystem" },
+            "properties": [{ "id": "custom.width", "value": 100 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "vulnerabilities" },
+            "properties": [
+              { "id": "custom.width", "value": 150 },
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "major_behind" },
+            "properties": [
+              { "id": "custom.width", "value": 120 },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 1 },
+                { "color": "orange", "value": 2 },
+                { "color": "red", "value": 3 }
+              ] } },
+              { "id": "color", "value": { "mode": "thresholds" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "project" },
+            "properties": [{ "id": "custom.width", "value": 220 }]
+          }
+        ]
+      },
+      "gridPos": { "h": 16, "w": 24, "x": 0, "y": 25 },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": true, "enablePagination": true, "fields": "", "reducer": ["count"], "show": true },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "major_behind" }]
+      },
+      "title": "Outdated Dependencies Detail",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  c.\"NAME\" AS component,\n  COALESCE(c.\"GROUP\", '') AS group,\n  c.\"VERSION\" AS current_version,\n  rmc.\"LATEST_VERSION\" AS latest_version,\n  rmc.\"REPOSITORY_TYPE\" AS ecosystem,\n  CASE\n    WHEN split_part(c.\"VERSION\", '.', 1) ~ '^[0-9]+$' AND split_part(rmc.\"LATEST_VERSION\", '.', 1) ~ '^[0-9]+$'\n    THEN split_part(rmc.\"LATEST_VERSION\", '.', 1)::int - split_part(c.\"VERSION\", '.', 1)::int\n    ELSE NULL\n  END AS major_behind,\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  (SELECT COUNT(*) FROM \"COMPONENTS_VULNERABILITIES\" cv WHERE cv.\"COMPONENT_ID\" = c.\"ID\") AS vulnerabilities,\n  rmc.\"PUBLISHED\" AS latest_published\nFROM \"COMPONENT\" c\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nJOIN \"REPOSITORY_META_COMPONENT\" rmc ON rmc.\"NAME\" = c.\"NAME\" AND COALESCE(rmc.\"NAMESPACE\",'') = COALESCE(c.\"GROUP\",'')\nWHERE c.\"VERSION\" != rmc.\"LATEST_VERSION\"\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\nORDER BY major_behind DESC NULLS LAST, c.\"NAME\"",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["dependency-track", "dependencies", "security"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "includeAll": true,
+        "multi": true,
+        "name": "project",
+        "label": "Project",
+        "query": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "title": "Outdated Dependencies",
+  "uid": "outdated-dependencies",
+  "version": 1
+}
