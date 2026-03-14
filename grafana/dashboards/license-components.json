@@ -1,0 +1,220 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "arrow-left",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Back to License Overview",
+      "type": "link",
+      "url": "/d/license-overview/license-overview"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Total Components",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count\nFROM \"COMPONENT\" c\nLEFT JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE COALESCE(l.\"NAME\", c.\"LICENSE\", 'Unknown') = '${license}'\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "Copyleft": { "color": "red", "index": 0, "text": "Copyleft" } }, "type": "value" },
+            { "options": { "Weak Copyleft": { "color": "orange", "index": 1, "text": "Weak Copyleft" } }, "type": "value" },
+            { "options": { "Permissive": { "color": "green", "index": 2, "text": "Permissive" } }, "type": "value" },
+            { "options": { "Non-Commercial": { "color": "purple", "index": 3, "text": "Non-Commercial" } }, "type": "value" },
+            { "options": { "Unknown": { "color": "semi-dark-yellow", "index": 4, "text": "Unknown" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "text", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "License Group",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COALESCE(\n  (SELECT lg.\"NAME\" FROM \"LICENSEGROUP\" lg JOIN \"LICENSEGROUP_LICENSE\" lgl ON lgl.\"LICENSEGROUP_ID\" = lg.\"ID\" WHERE lgl.\"LICENSE_ID\" = l.\"ID\" LIMIT 1),\n  'Unknown'\n) AS license_group\nFROM \"COMPONENT\" c\nLEFT JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\"\nWHERE COALESCE(l.\"NAME\", c.\"LICENSE\", 'Unknown') = '${license}'\nLIMIT 1",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "text", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "SPDX ID",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COALESCE(l.\"LICENSEID\", 'N/A') AS spdx_id\nFROM \"LICENSE\" l\nWHERE l.\"NAME\" = '${license}'\nLIMIT 1",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "text", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Projects Affected",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT COUNT(DISTINCT c.\"PROJECT_ID\") AS projects\nFROM \"COMPONENT\" c\nLEFT JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE COALESCE(l.\"NAME\", c.\"LICENSE\", 'Unknown') = '${license}'\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "version" },
+            "properties": [{ "id": "custom.width", "value": 150 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "group" },
+            "properties": [{ "id": "custom.width", "value": 200 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "project" },
+            "properties": [{ "id": "custom.width", "value": 250 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "purl" },
+            "properties": [{ "id": "custom.width", "value": 400 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "vulnerabilities" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 },
+              { "id": "custom.width", "value": 180 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 18, "w": 24, "x": 0, "y": 4 },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": true, "enablePagination": true, "fields": "", "reducer": ["sum"], "show": true },
+        "showHeader": true,
+        "sortBy": [{ "desc": false, "displayName": "component" }]
+      },
+      "title": "Components with license: $license",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  c.\"NAME\" AS component,\n  c.\"VERSION\" AS version,\n  COALESCE(c.\"GROUP\", '') AS group,\n  COALESCE(c.\"PURL\", '') AS purl,\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  c.\"CLASSIFIER\" AS classifier,\n  (SELECT COUNT(*) FROM \"COMPONENTS_VULNERABILITIES\" cv WHERE cv.\"COMPONENT_ID\" = c.\"ID\") AS vulnerabilities\nFROM \"COMPONENT\" c\nLEFT JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\"\nJOIN \"PROJECT\" p ON p.\"ID\" = c.\"PROJECT_ID\"\nWHERE COALESCE(l.\"NAME\", c.\"LICENSE\", 'Unknown') = '${license}'\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\nORDER BY c.\"NAME\", c.\"VERSION\"",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["dependency-track", "licenses", "security"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Unknown", "value": "Unknown" },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT DISTINCT COALESCE(l.\"NAME\", c.\"LICENSE\", 'Unknown') AS license FROM \"COMPONENT\" c LEFT JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\" ORDER BY 1",
+        "includeAll": false,
+        "multi": false,
+        "name": "license",
+        "label": "License",
+        "query": "SELECT DISTINCT COALESCE(l.\"NAME\", c.\"LICENSE\", 'Unknown') AS license FROM \"COMPONENT\" c LEFT JOIN \"LICENSE\" l ON l.\"ID\" = c.\"LICENSE_ID\" ORDER BY 1",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "includeAll": true,
+        "multi": true,
+        "name": "project",
+        "label": "Project",
+        "query": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "title": "License Components",
+  "uid": "license-components",
+  "version": 1
+}
