@@ -2,15 +2,24 @@
 set -euo pipefail
 
 # Upload SBOM to Dependency-Track
-# Usage: ./upload-sbom.sh <project-path> <project-name> <project-version>
+# Usage: ./upload-sbom.sh <project-path> <project-name> <project-version> [--generator syft|trivy]
 #
 # Required environment variables:
 #   DTRACK_URL     - Dependency-Track API URL (e.g. http://localhost:8081)
 #   DTRACK_API_KEY - Dependency-Track API key
 
-PROJECT_PATH="${1:?Usage: $0 <project-path> <project-name> <project-version>}"
-PROJECT_NAME="${2:?Usage: $0 <project-path> <project-name> <project-version>}"
-PROJECT_VERSION="${3:?Usage: $0 <project-path> <project-name> <project-version>}"
+PROJECT_PATH="${1:?Usage: $0 <project-path> <project-name> <project-version> [--generator syft|trivy]}"
+PROJECT_NAME="${2:?Usage: $0 <project-path> <project-name> <project-version> [--generator syft|trivy]}"
+PROJECT_VERSION="${3:?Usage: $0 <project-path> <project-name> <project-version> [--generator syft|trivy]}"
+shift 3
+
+GENERATOR="trivy"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --generator) GENERATOR="$2"; shift 2 ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
 
 : "${DTRACK_URL:?DTRACK_URL is not set}"
 : "${DTRACK_API_KEY:?DTRACK_API_KEY is not set}"
@@ -19,8 +28,19 @@ WORK_DIR=$(mktemp -d /tmp/sbom-XXXXXX)
 SBOM_FILE="$WORK_DIR/sbom.json"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
-echo "Generating SBOM for $PROJECT_PATH..."
-trivy fs --format cyclonedx --output "$SBOM_FILE" "$PROJECT_PATH"
+echo "Generating SBOM for $PROJECT_PATH using $GENERATOR..."
+case "$GENERATOR" in
+  trivy)
+    trivy fs --format cyclonedx --output "$SBOM_FILE" "$PROJECT_PATH"
+    ;;
+  syft)
+    syft packages "dir:$PROJECT_PATH" -o cyclonedx-json="$SBOM_FILE"
+    ;;
+  *)
+    echo "Unknown generator: $GENERATOR (use trivy or syft)" >&2
+    exit 1
+    ;;
+esac
 
 echo "Uploading SBOM to $DTRACK_URL for project $PROJECT_NAME:$PROJECT_VERSION..."
 PAYLOAD_FILE="$WORK_DIR/payload.json"

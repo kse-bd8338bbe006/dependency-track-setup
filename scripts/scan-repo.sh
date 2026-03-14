@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Clone a git repository, generate SBOM with Trivy, and upload to Dependency-Track
-# Usage: ./scan-repo.sh <git-repo-url> [project-name] [project-version]
+# Clone a git repository, generate SBOM with Trivy or Syft, and upload to Dependency-Track
+# Usage: ./scan-repo.sh <git-repo-url> [project-name] [project-version] [--generator syft|trivy]
 #
 # Required environment variables:
 #   DTRACK_URL     - Dependency-Track API URL (e.g. http://localhost:8081)
 #   DTRACK_API_KEY - Dependency-Track API key
 
-REPO_URL="${1:?Usage: $0 <git-repo-url> [project-name] [project-version]}"
+REPO_URL="${1:?Usage: $0 <git-repo-url> [project-name] [project-version] [--generator syft|trivy]}"
 REPO_NAME=$(basename "$REPO_URL" .git)
 PROJECT_NAME="${2:-$REPO_NAME}"
 PROJECT_VERSION="${3:-main}"
+shift $(( $# < 3 ? $# : 3 ))
+
+GENERATOR="trivy"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --generator) GENERATOR="$2"; shift 2 ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
 
 : "${DTRACK_URL:?DTRACK_URL is not set}"
 : "${DTRACK_API_KEY:?DTRACK_API_KEY is not set}"
@@ -28,8 +37,19 @@ echo "Installing dependencies..."
 find "$WORK_DIR/repo" -name "package.json" -not -path "*/node_modules/*" -execdir npm install --ignore-scripts --legacy-peer-deps 2>&1 \;
 find "$WORK_DIR/repo" -name "requirements.txt" -execdir pip install -r requirements.txt --target=.venv 2>/dev/null \;
 
-echo "Generating SBOM for $PROJECT_NAME..."
-trivy fs --format cyclonedx --include-dev-deps --output "$SBOM_FILE" "$WORK_DIR/repo"
+echo "Generating SBOM for $PROJECT_NAME using $GENERATOR..."
+case "$GENERATOR" in
+  trivy)
+    trivy fs --format cyclonedx --include-dev-deps --output "$SBOM_FILE" "$WORK_DIR/repo"
+    ;;
+  syft)
+    syft packages "dir:$WORK_DIR/repo" -o cyclonedx-json="$SBOM_FILE"
+    ;;
+  *)
+    echo "Unknown generator: $GENERATOR (use trivy or syft)" >&2
+    exit 1
+    ;;
+esac
 
 echo "Uploading SBOM to $DTRACK_URL for project $PROJECT_NAME:$PROJECT_VERSION..."
 PAYLOAD_FILE="$WORK_DIR/payload.json"

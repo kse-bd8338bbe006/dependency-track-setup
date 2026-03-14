@@ -446,6 +446,96 @@
     {
       "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
       "gridPos": { "h": 2, "w": 24, "x": 0, "y": 27 },
+      "id": 50,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "## SBOM Freshness",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 29 },
+      "id": 51,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Fresh (< 7d)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" >= NOW() - interval '7 days'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 29 },
+      "id": 52,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Stale (7-30d)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" < NOW() - interval '7 days' AND \"LAST_BOM_IMPORTED\" >= NOW() - interval '30 days'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 29 },
+      "id": 53,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Critical (> 30d)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" < NOW() - interval '30 days'",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 29 },
+      "id": 54,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "### [Open Dashboard](/d/sbom-freshness/sbom-freshness)\nScan freshness distribution, SBOM format breakdown, upload history, configurable freshness thresholds",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 33 },
       "id": 40,
       "options": {
         "code": { "language": "plaintext", "showLineNumbers": false },
@@ -499,7 +589,7 @@
           }
         ]
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 35 },
       "id": 41,
       "options": {
         "cellHeight": "sm",

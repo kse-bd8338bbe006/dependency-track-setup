@@ -1,0 +1,402 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "arrow-left",
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Back to Home",
+      "type": "link",
+      "url": "/d/home/security-portfolio-overview"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Total Projects",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"PROJECT\" WHERE \"ACTIVE\" = true",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 4, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Total SBOM Uploads",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"BOM\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 8, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Fresh (< $fresh_days d)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" >= NOW() - ($fresh_days || ' days')::interval",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 12, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Stale ($fresh_days-$stale_days d)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" < NOW() - ($fresh_days || ' days')::interval AND \"LAST_BOM_IMPORTED\" >= NOW() - ($stale_days || ' days')::interval",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 16, "y": 0 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Critical (> $stale_days d)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COUNT(*) AS count FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" < NOW() - ($stale_days || ' days')::interval",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "red", "value": null },
+            { "color": "orange", "value": 50 },
+            { "color": "yellow", "value": 75 },
+            { "color": "green", "value": 90 }
+          ] },
+          "unit": "percent", "max": 100, "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 0 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Freshness Rate",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT CASE WHEN COUNT(*) = 0 THEN 100 ELSE ROUND(COUNT(*) FILTER (WHERE \"LAST_BOM_IMPORTED\" >= NOW() - ($fresh_days || ' days')::interval)::numeric / COUNT(*) * 100, 1) END AS pct FROM \"PROJECT\" WHERE \"ACTIVE\" = true",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Fresh" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Stale" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 5 },
+      "id": 7,
+      "options": {
+        "displayLabels": ["name", "value", "percent"],
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "SBOM Freshness Distribution",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT status, count FROM (\n  SELECT 'Fresh' AS status, COUNT(*) AS count, 1 AS sort\n  FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" >= NOW() - ($fresh_days || ' days')::interval\n  UNION ALL\n  SELECT 'Stale' AS status, COUNT(*) AS count, 2 AS sort\n  FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" < NOW() - ($fresh_days || ' days')::interval AND \"LAST_BOM_IMPORTED\" >= NOW() - ($stale_days || ' days')::interval\n  UNION ALL\n  SELECT 'Critical' AS status, COUNT(*) AS count, 3 AS sort\n  FROM \"PROJECT\" WHERE \"ACTIVE\" = true AND \"LAST_BOM_IMPORTED\" < NOW() - ($stale_days || ' days')::interval\n) sub ORDER BY sort",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 5 },
+      "id": 8,
+      "options": {
+        "displayLabels": ["name", "value", "percent"],
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "SBOM Format Distribution",
+      "type": "piechart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT \"BOM_FORMAT\" || ' ' || \"SPEC_VERSION\" AS format, COUNT(*) AS count FROM \"BOM\" GROUP BY \"BOM_FORMAT\", \"SPEC_VERSION\" ORDER BY count DESC",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisLabel": "uploads", "fillOpacity": 80, "gradientMode": "none", "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "stacking": { "group": "A", "mode": "none" } },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 5 },
+      "id": 9,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      },
+      "title": "SBOM Uploads per Project",
+      "type": "barchart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT p.\"NAME\" || ':' || p.\"VERSION\" AS project, COUNT(*) AS uploads\nFROM \"BOM\" b\nJOIN \"PROJECT\" p ON p.\"ID\" = b.\"PROJECT_ID\"\nGROUP BY project\nORDER BY uploads DESC",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "days_since_scan" },
+            "properties": [
+              { "id": "custom.width", "value": 150 },
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-GrYlRd" } },
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 90 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "freshness" },
+            "properties": [
+              { "id": "custom.width", "value": 100 },
+              { "id": "mappings", "value": [
+                { "options": { "Fresh": { "color": "green", "index": 0, "text": "Fresh" } }, "type": "value" },
+                { "options": { "Stale": { "color": "orange", "index": 1, "text": "Stale" } }, "type": "value" },
+                { "options": { "Critical": { "color": "red", "index": 2, "text": "Critical" } }, "type": "value" }
+              ]},
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "components" },
+            "properties": [{ "id": "custom.width", "value": 120 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "vulnerabilities" },
+            "properties": [
+              { "id": "custom.width", "value": 140 },
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "sbom_uploads" },
+            "properties": [{ "id": "custom.width", "value": 120 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "last_scan" },
+            "properties": [{ "id": "custom.width", "value": 180 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "last_vuln_analysis" },
+            "properties": [{ "id": "custom.width", "value": 180 }]
+          }
+        ]
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 15 },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": true, "enablePagination": true, "fields": "", "reducer": ["count"], "show": true },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "days_since_scan" }]
+      },
+      "title": "Project Scan Status",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  p.\"CLASSIFIER\" AS classifier,\n  EXTRACT(DAY FROM NOW() - p.\"LAST_BOM_IMPORTED\")::int AS days_since_scan,\n  CASE\n    WHEN p.\"LAST_BOM_IMPORTED\" >= NOW() - ($fresh_days || ' days')::interval THEN 'Fresh'\n    WHEN p.\"LAST_BOM_IMPORTED\" >= NOW() - ($stale_days || ' days')::interval THEN 'Stale'\n    ELSE 'Critical'\n  END AS freshness,\n  (SELECT COUNT(*) FROM \"COMPONENT\" c WHERE c.\"PROJECT_ID\" = p.\"ID\") AS components,\n  (SELECT COUNT(DISTINCT cv.\"VULNERABILITY_ID\") FROM \"COMPONENT\" c2 JOIN \"COMPONENTS_VULNERABILITIES\" cv ON cv.\"COMPONENT_ID\" = c2.\"ID\" WHERE c2.\"PROJECT_ID\" = p.\"ID\") AS vulnerabilities,\n  (SELECT COUNT(*) FROM \"BOM\" b WHERE b.\"PROJECT_ID\" = p.\"ID\") AS sbom_uploads,\n  p.\"LAST_BOM_IMPORTED\" AS last_scan,\n  p.\"LAST_VULNERABILITY_ANALYSIS\" AS last_vuln_analysis\nFROM \"PROJECT\" p\nWHERE p.\"ACTIVE\" = true\nORDER BY days_since_scan DESC",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": false,
+            "filterable": true
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "imported" },
+            "properties": [{ "id": "custom.width", "value": 200 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "freshness" },
+            "properties": [
+              { "id": "custom.width", "value": 100 },
+              { "id": "mappings", "value": [
+                { "options": { "Fresh": { "color": "green", "index": 0, "text": "Fresh" } }, "type": "value" },
+                { "options": { "Stale": { "color": "orange", "index": 1, "text": "Stale" } }, "type": "value" },
+                { "options": { "Critical": { "color": "red", "index": 2, "text": "Critical" } }, "type": "value" }
+              ]},
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 27 },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": true, "enablePagination": true, "fields": "", "reducer": ["count"], "show": true },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "imported" }]
+      },
+      "title": "SBOM Upload History",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  b.\"BOM_FORMAT\" AS format,\n  b.\"SPEC_VERSION\" AS spec_version,\n  b.\"SERIAL_NUMBER\" AS serial_number,\n  b.\"IMPORTED\" AS imported,\n  CASE\n    WHEN b.\"IMPORTED\" >= NOW() - ($fresh_days || ' days')::interval THEN 'Fresh'\n    WHEN b.\"IMPORTED\" >= NOW() - ($stale_days || ' days')::interval THEN 'Stale'\n    ELSE 'Critical'\n  END AS freshness\nFROM \"BOM\" b\nJOIN \"PROJECT\" p ON p.\"ID\" = b.\"PROJECT_ID\"\nORDER BY b.\"IMPORTED\" DESC",
+        "refId": "A"
+      }]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["dependency-track", "sbom", "compliance"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "7", "value": "7" },
+        "name": "fresh_days",
+        "label": "Fresh threshold (days)",
+        "query": "7",
+        "type": "textbox"
+      },
+      {
+        "current": { "selected": false, "text": "30", "value": "30" },
+        "name": "stale_days",
+        "label": "Stale threshold (days)",
+        "query": "30",
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": { "from": "now-90d", "to": "now" },
+  "title": "SBOM Freshness",
+  "uid": "sbom-freshness",
+  "version": 1
+}

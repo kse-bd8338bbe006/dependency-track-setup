@@ -28,6 +28,17 @@
         },
         "overrides": [
           {
+            "matcher": { "id": "byName", "options": "vuln_id" },
+            "properties": [
+              { "id": "links", "value": [
+                {
+                  "title": "View details for ${__data.fields.vuln_id}",
+                  "url": "/d/vulnerability-detail/vulnerability-detail?var-cve=${__data.fields.vuln_id}"
+                }
+              ]}
+            ]
+          },
+          {
             "matcher": { "id": "byName", "options": "epss_score" },
             "properties": [
               { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },

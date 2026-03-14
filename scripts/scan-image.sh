@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build a Docker image from a Dockerfile, generate SBOM with Trivy, and upload to Dependency-Track
-# Usage: ./scan-image.sh <path-to-dockerfile-dir> <project-name> [project-version]
+# Build a Docker image from a Dockerfile, generate SBOM with Trivy or Syft, and upload to Dependency-Track
+# Usage: ./scan-image.sh <path-to-dockerfile-dir> <project-name> [project-version] [--generator syft|trivy]
 #
 # The script builds the image, scans the resulting image (not just the source), and uploads
 # the SBOM. This captures OS-level packages, system libraries, and application dependencies
@@ -12,9 +12,18 @@ set -euo pipefail
 #   DTRACK_URL     - Dependency-Track API URL (e.g. http://localhost:8081)
 #   DTRACK_API_KEY - Dependency-Track API key
 
-DOCKERFILE_DIR="${1:?Usage: $0 <path-to-dockerfile-dir> <project-name> [project-version]}"
-PROJECT_NAME="${2:?Usage: $0 <path-to-dockerfile-dir> <project-name> [project-version]}"
+DOCKERFILE_DIR="${1:?Usage: $0 <path-to-dockerfile-dir> <project-name> [project-version] [--generator syft|trivy]}"
+PROJECT_NAME="${2:?Usage: $0 <path-to-dockerfile-dir> <project-name> [project-version] [--generator syft|trivy]}"
 PROJECT_VERSION="${3:-latest}"
+shift $(( $# < 3 ? $# : 3 ))
+
+GENERATOR="trivy"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --generator) GENERATOR="$2"; shift 2 ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
 
 : "${DTRACK_URL:?DTRACK_URL is not set}"
 : "${DTRACK_API_KEY:?DTRACK_API_KEY is not set}"
@@ -34,8 +43,19 @@ echo "Building Docker image from $DOCKERFILE_DIR..."
 docker build -t "$IMAGE_TAG" "$DOCKERFILE_DIR"
 
 # Generate SBOM from the built image
-echo "Generating SBOM for image $IMAGE_TAG..."
-trivy image --format cyclonedx --output "$SBOM_FILE" "$IMAGE_TAG"
+echo "Generating SBOM for image $IMAGE_TAG using $GENERATOR..."
+case "$GENERATOR" in
+  trivy)
+    trivy image --format cyclonedx --output "$SBOM_FILE" "$IMAGE_TAG"
+    ;;
+  syft)
+    syft packages "$IMAGE_TAG" -o cyclonedx-json="$SBOM_FILE"
+    ;;
+  *)
+    echo "Unknown generator: $GENERATOR (use trivy or syft)" >&2
+    exit 1
+    ;;
+esac
 
 # Build JSON payload using python to avoid argument length limits
 echo "Uploading SBOM to $DTRACK_URL for project $PROJECT_NAME:$PROJECT_VERSION..."
