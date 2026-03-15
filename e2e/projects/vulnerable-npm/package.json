@@ -1,0 +1,17 @@
+{
+  "name": "e2e-vulnerable-npm",
+  "version": "1.0.0",
+  "description": "Test project with known vulnerable npm packages for e2e testing",
+  "dependencies": {
+    "lodash": "4.17.20",
+    "express": "4.17.1",
+    "minimist": "1.2.5",
+    "node-fetch": "2.6.1",
+    "json5": "2.2.1",
+    "semver": "7.3.7",
+    "axios": "0.21.1",
+    "qs": "6.5.2",
+    "tough-cookie": "4.0.0",
+    "word-wrap": "1.2.3"
+  }
+}

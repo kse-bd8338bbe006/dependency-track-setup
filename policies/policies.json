@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Block Critical Vulnerabilities",
+    "operator": "ANY",
+    "violationState": "FAIL",
+    "conditions": [
+      { "subject": "SEVERITY", "operator": "IS", "value": "CRITICAL" }
+    ]
+  },
+  {
+    "name": "Flag High Vulnerabilities",
+    "operator": "ANY",
+    "violationState": "WARN",
+    "conditions": [
+      { "subject": "SEVERITY", "operator": "IS", "value": "HIGH" }
+    ]
+  },
+  {
+    "name": "No Copyleft Licenses",
+    "operator": "ANY",
+    "violationState": "FAIL",
+    "conditions": [
+      { "subject": "LICENSE_GROUP", "operator": "IS", "value": "Copyleft" }
+    ]
+  },
+  {
+    "name": "Blocked Packages",
+    "operator": "ANY",
+    "violationState": "FAIL",
+    "conditions": [
+      { "subject": "PACKAGE_URL", "operator": "MATCHES", "value": "pkg:npm/event-stream@3.3.6" },
+      { "subject": "PACKAGE_URL", "operator": "MATCHES", "value": "pkg:npm/ua-parser-js@0.7.29" },
+      { "subject": "PACKAGE_URL", "operator": "MATCHES", "value": "pkg:npm/@ledgerhq/connect-kit@1.1.8" }
+    ]
+  },
+  {
+    "name": "Block Log4Shell",
+    "operator": "ANY",
+    "violationState": "FAIL",
+    "conditions": [
+      { "subject": "VULNERABILITY_ID", "operator": "IS", "value": "CVE-2021-44228" }
+    ]
+  },
+  {
+    "name": "Block XZ Backdoor",
+    "operator": "ANY",
+    "violationState": "FAIL",
+    "conditions": [
+      { "subject": "VULNERABILITY_ID", "operator": "IS", "value": "CVE-2024-3094" }
+    ]
+  }
+]

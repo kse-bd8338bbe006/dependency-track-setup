@@ -1,0 +1,371 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "arrow-left",
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Back to Home",
+      "type": "link",
+      "url": "/d/home/security-portfolio-overview"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "### Risk Score Formula\n`Risk Score = (Critical × 10) + (High × 5) + (Medium × 3) + (Low × 1) + (Unassigned × 5)`",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 50 },
+            { "color": "orange", "value": 200 },
+            { "color": "red", "value": 500 }
+          ] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 5, "x": 0, "y": 3 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Portfolio Risk Score",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT SUM(sub.risk)::int AS score FROM (\n  SELECT DISTINCT ON (p.\"ID\") pm.\"RISKSCORE\" AS risk\n  FROM \"PROJECT\" p\n  JOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\n  WHERE p.\"ACTIVE\" = true\n    AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  ORDER BY p.\"ID\", pm.\"LAST_OCCURRENCE\" DESC\n) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 3, "x": 5, "y": 3 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Critical",
+      "description": "Weight: ×10",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT SUM(sub.cnt)::int AS count FROM (\n  SELECT DISTINCT ON (p.\"ID\") pm.\"CRITICAL\" AS cnt\n  FROM \"PROJECT\" p JOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\n  WHERE p.\"ACTIVE\" = true AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  ORDER BY p.\"ID\", pm.\"LAST_OCCURRENCE\" DESC\n) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 3, "x": 8, "y": 3 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "High",
+      "description": "Weight: ×5",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT SUM(sub.cnt)::int AS count FROM (\n  SELECT DISTINCT ON (p.\"ID\") pm.\"HIGH\" AS cnt\n  FROM \"PROJECT\" p JOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\n  WHERE p.\"ACTIVE\" = true AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  ORDER BY p.\"ID\", pm.\"LAST_OCCURRENCE\" DESC\n) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "yellow", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 3, "x": 11, "y": 3 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Medium",
+      "description": "Weight: ×3",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT SUM(sub.cnt)::int AS count FROM (\n  SELECT DISTINCT ON (p.\"ID\") pm.\"MEDIUM\" AS cnt\n  FROM \"PROJECT\" p JOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\n  WHERE p.\"ACTIVE\" = true AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  ORDER BY p.\"ID\", pm.\"LAST_OCCURRENCE\" DESC\n) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 3, "x": 14, "y": 3 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Low",
+      "description": "Weight: ×1",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT SUM(sub.cnt)::int AS count FROM (\n  SELECT DISTINCT ON (p.\"ID\") pm.\"LOW\" AS cnt\n  FROM \"PROJECT\" p JOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\n  WHERE p.\"ACTIVE\" = true AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  ORDER BY p.\"ID\", pm.\"LAST_OCCURRENCE\" DESC\n) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "semi-dark-purple", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 3, "x": 17, "y": 3 },
+      "id": 7,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Unassigned",
+      "description": "Weight: ×5",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT COALESCE(SUM(sub.cnt), 0)::int AS count FROM (\n  SELECT DISTINCT ON (p.\"ID\") COALESCE(pm.\"UNASSIGNED_SEVERITY\", 0) AS cnt\n  FROM \"PROJECT\" p JOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\n  WHERE p.\"ACTIVE\" = true AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  ORDER BY p.\"ID\", pm.\"LAST_OCCURRENCE\" DESC\n) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 3 },
+      "id": 8,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Total Vulnerabilities",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT SUM(sub.cnt)::int AS count FROM (\n  SELECT DISTINCT ON (p.\"ID\") pm.\"VULNERABILITIES\" AS cnt\n  FROM \"PROJECT\" p JOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\n  WHERE p.\"ACTIVE\" = true AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  ORDER BY p.\"ID\", pm.\"LAST_OCCURRENCE\" DESC\n) sub",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisLabel": "", "fillOpacity": 80, "gradientMode": "none", "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "stacking": { "group": "A", "mode": "normal" } },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical (×10)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High (×5)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium (×3)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low (×1)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Unassigned (×5)" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-purple", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 8 },
+      "id": 9,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "normal",
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      },
+      "title": "Risk Score Breakdown by Project",
+      "type": "barchart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  pm.\"CRITICAL\" * 10 AS \"Critical (×10)\",\n  pm.\"HIGH\" * 5 AS \"High (×5)\",\n  pm.\"MEDIUM\" * 3 AS \"Medium (×3)\",\n  pm.\"LOW\" * 1 AS \"Low (×1)\",\n  COALESCE(pm.\"UNASSIGNED_SEVERITY\", 0) * 5 AS \"Unassigned (×5)\"\nFROM \"PROJECT\" p\nJOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\nWHERE p.\"ACTIVE\" = true\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  AND pm.\"LAST_OCCURRENCE\" = (\n    SELECT MAX(pm2.\"LAST_OCCURRENCE\") FROM \"PROJECTMETRICS\" pm2 WHERE pm2.\"PROJECT_ID\" = p.\"ID\"\n  )\nORDER BY pm.\"RISKSCORE\" DESC",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisLabel": "risk score", "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "lineInterpolation": "linear", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" } },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 18 },
+      "id": 10,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Risk Score Over Time",
+      "type": "timeseries",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "time_series", "rawQuery": true,
+        "rawSql": "SELECT\n  pm.\"LAST_OCCURRENCE\" AS time,\n  pm.\"RISKSCORE\" AS value,\n  p.\"NAME\" || ':' || p.\"VERSION\" AS metric\nFROM \"PROJECTMETRICS\" pm\nJOIN \"PROJECT\" p ON p.\"ID\" = pm.\"PROJECT_ID\"\nWHERE p.\"ACTIVE\" = true\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  AND pm.\"LAST_OCCURRENCE\" BETWEEN $__timeFrom() AND $__timeTo()\nORDER BY pm.\"LAST_OCCURRENCE\"",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false, "filterable": true },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "risk_score" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 },
+              { "id": "custom.width", "value": 180 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "critical" },
+            "properties": [
+              { "id": "custom.width", "value": 80 },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "high" },
+            "properties": [
+              { "id": "custom.width", "value": 80 },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "medium" },
+            "properties": [
+              { "id": "custom.width", "value": 80 },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "low" },
+            "properties": [
+              { "id": "custom.width", "value": 80 },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "vulnerable_components" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-BlYlRd" } },
+              { "id": "min", "value": 0 },
+              { "id": "custom.width", "value": 180 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "audit_progress" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "custom.width", "value": 130 },
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } },
+              { "id": "color", "value": { "mode": "continuous-RdYlGr" } },
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 100 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 28 },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "countRows": true, "enablePagination": true, "fields": "", "reducer": ["count"], "show": true },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "risk_score" }]
+      },
+      "title": "Project Risk Detail",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "SELECT\n  p.\"NAME\" || ':' || p.\"VERSION\" AS project,\n  pm.\"RISKSCORE\"::int AS risk_score,\n  pm.\"CRITICAL\" AS critical,\n  pm.\"HIGH\" AS high,\n  pm.\"MEDIUM\" AS medium,\n  pm.\"LOW\" AS low,\n  COALESCE(pm.\"UNASSIGNED_SEVERITY\", 0) AS unassigned,\n  pm.\"VULNERABILITIES\" AS total_vulns,\n  pm.\"VULNERABLECOMPONENTS\" AS vulnerable_components,\n  pm.\"COMPONENTS\" AS total_components,\n  CASE WHEN COALESCE(pm.\"FINDINGS_TOTAL\", 0) = 0 THEN 0\n    ELSE ROUND(COALESCE(pm.\"FINDINGS_AUDITED\", 0)::numeric / pm.\"FINDINGS_TOTAL\" * 100, 1)\n  END AS audit_progress,\n  pm.\"SUPPRESSED\" AS suppressed\nFROM \"PROJECT\" p\nJOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = p.\"ID\"\nWHERE p.\"ACTIVE\" = true\n  AND ('${project:raw}' = '$__all' OR p.\"NAME\" || ':' || p.\"VERSION\" IN (${project:sqlstring}))\n  AND pm.\"LAST_OCCURRENCE\" = (\n    SELECT MAX(pm2.\"LAST_OCCURRENCE\") FROM \"PROJECTMETRICS\" pm2 WHERE pm2.\"PROJECT_ID\" = p.\"ID\"\n  )\nORDER BY pm.\"RISKSCORE\" DESC",
+        "refId": "A"
+      }]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["dependency-track", "risk", "security"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "includeAll": true,
+        "multi": true,
+        "name": "project",
+        "label": "Project",
+        "query": "SELECT DISTINCT \"NAME\" || ':' || \"VERSION\" FROM \"PROJECT\" ORDER BY 1",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "title": "Portfolio Risk Score",
+  "uid": "risk-score",
+  "version": 1
+}
