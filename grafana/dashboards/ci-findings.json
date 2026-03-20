@@ -1,0 +1,597 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false },
+        "content": "# CI Security Findings\nCurrent vulnerability state from the **latest scan** per project. Unlike historical dashboards, this shows what CI sees right now.",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "red", "value": 1 }
+          ]}
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 3 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Projects with Critical",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT COUNT(*) AS count FROM (\n  SELECT DISTINCT lp.\"ID\"\n  FROM latest_project lp\n  JOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\n  JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\n  LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\n  WHERE v.\"SEVERITY\" = 'CRITICAL'\n    AND (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))\n) sub",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 1 }
+          ]}
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 3 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Build Blockers",
+      "description": "Findings with FAIL-level policy violations or CRITICAL severity",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT COUNT(*) AS count\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nLEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE v.\"SEVERITY\" = 'CRITICAL'\n  AND (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "#EAB839", "value": 1 }
+          ]}
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 3 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "High EPSS (>0.5)",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT COUNT(*) AS count\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nLEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE v.\"EPSSSCORE\" > 0.5\n  AND (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 3 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Total Open Findings",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT COUNT(*) AS count\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nLEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 3 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Triaged / Suppressed",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT COUNT(*) AS count\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nJOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE a.\"STATE\" IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED')",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "orange", "value": 0.01 },
+            { "color": "red", "value": 0.50 }
+          ]},
+          "unit": "percentunit",
+          "decimals": 1
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 3 },
+      "id": 7,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Max EPSS Score",
+      "type": "stat",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT COALESCE(MAX(v.\"EPSSSCORE\"), 0) AS max_epss\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nLEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 7 },
+      "id": 8,
+      "options": {
+        "content": "## Project Build Status",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "left", "cellOptions": { "type": "auto" }, "filterable": true },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "build_status" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": {
+                "type": "color-text"
+              }},
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "BLOCKED": { "text": "BLOCKED", "color": "red" }, "PASS": { "text": "PASS", "color": "green" }, "WARNING": { "text": "WARNING", "color": "orange" } } }
+              ]},
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "risk_score" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 50 },
+                { "color": "orange", "value": 150 },
+                { "color": "red", "value": 300 }
+              ]}},
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 500 },
+              { "id": "custom.width", "value": 200 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "critical" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "red", "value": 1 }
+              ]}},
+              { "id": "custom.width", "value": 80 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "high" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "orange", "value": 1 }
+              ]}},
+              { "id": "custom.width", "value": 80 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "max_epss" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "orange", "value": 0.1 },
+                { "color": "red", "value": 0.5 }
+              ]}},
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "last_scan" },
+            "properties": [
+              { "id": "unit", "value": "dateTimeAsIso" },
+              { "id": "custom.width", "value": 180 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "project" },
+            "properties": [
+              { "id": "custom.width", "value": 200 },
+              { "id": "links", "value": [
+                { "title": "View in DT", "url": "http://localhost:8080/projects/${__data.fields.project_uuid}", "targetBlank": true }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "project_uuid" },
+            "properties": [
+              { "id": "custom.hidden", "value": true }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 9 },
+      "id": 9,
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "risk_score", "desc": true }], "footer": { "show": true, "reducer": ["count"], "fields": ["project"] } },
+      "title": "CI Build Gate Status by Project",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\", p.\"VERSION\", p.\"UUID\", p.\"LAST_BOM_IMPORTED\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT\n  lp.\"NAME\" AS project,\n  lp.\"VERSION\" AS version,\n  lp.\"UUID\" AS project_uuid,\n  CASE\n    WHEN pm.\"CRITICAL\" > 0 THEN 'BLOCKED'\n    WHEN pm.\"HIGH\" > 5 THEN 'WARNING'\n    ELSE 'PASS'\n  END AS build_status,\n  pm.\"RISKSCORE\" AS risk_score,\n  pm.\"CRITICAL\" AS critical,\n  pm.\"HIGH\" AS high,\n  pm.\"MEDIUM\" AS medium,\n  pm.\"LOW\" AS low,\n  COALESCE((\n    SELECT MAX(v.\"EPSSSCORE\")\n    FROM \"FINDINGATTRIBUTION\" fa\n    JOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\n    LEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\n    WHERE fa.\"PROJECT_ID\" = lp.\"ID\"\n      AND (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))\n  ), 0) AS max_epss,\n  pm.\"COMPONENTS\" AS components,\n  lp.\"LAST_BOM_IMPORTED\" AS last_scan\nFROM latest_project lp\nJOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = lp.\"ID\"\n  AND pm.\"LAST_OCCURRENCE\" = (SELECT MAX(pm2.\"LAST_OCCURRENCE\") FROM \"PROJECTMETRICS\" pm2 WHERE pm2.\"PROJECT_ID\" = lp.\"ID\")\nORDER BY pm.\"RISKSCORE\" DESC",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 19 },
+      "id": 10,
+      "options": {
+        "content": "## Top Findings to Fix (Prioritized by EPSS)",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "left", "cellOptions": { "type": "auto" }, "filterable": true },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "severity" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": {
+                  "CRITICAL": { "text": "CRITICAL", "color": "red" },
+                  "HIGH": { "text": "HIGH", "color": "orange" },
+                  "MEDIUM": { "text": "MEDIUM", "color": "yellow" },
+                  "LOW": { "text": "LOW", "color": "blue" }
+                }}
+              ]},
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "epss" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 2 },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "orange", "value": 0.1 },
+                { "color": "red", "value": 0.5 }
+              ]}},
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 1 },
+              { "id": "custom.width", "value": 150 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "epss_percentile" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "cvss" },
+            "properties": [
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.width", "value": 80 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "vuln_id" },
+            "properties": [
+              { "id": "custom.width", "value": 180 },
+              { "id": "links", "value": [
+                { "title": "Vulnerability Details", "url": "/d/vulnerability-detail/vulnerability-detail?var-cve=${__value.text}", "targetBlank": true }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "age_days" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 7 },
+                { "color": "orange", "value": 30 },
+                { "color": "red", "value": 90 }
+              ]}},
+              { "id": "custom.width", "value": 80 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "analysis_state" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": {
+                  "NOT_SET": { "text": "Not Set", "color": "text" },
+                  "IN_TRIAGE": { "text": "In Triage", "color": "blue" },
+                  "EXPLOITABLE": { "text": "Exploitable", "color": "red" }
+                }}
+              ]},
+              { "id": "custom.width", "value": 110 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 21 },
+      "id": 11,
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "epss", "desc": true }], "footer": { "show": true, "reducer": ["count"], "fields": ["vuln_id"] } },
+      "title": "Open Findings — Sorted by Exploit Probability",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\", p.\"VERSION\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT\n  v.\"VULNID\" AS vuln_id,\n  v.\"SEVERITY\" AS severity,\n  COALESCE(v.\"CVSSV3BASESCORE\", v.\"CVSSV2BASESCORE\", 0) AS cvss,\n  COALESCE(v.\"EPSSSCORE\", 0) AS epss,\n  COALESCE(v.\"EPSSPERCENTILE\", 0) AS epss_percentile,\n  c.\"NAME\" AS component,\n  c.\"VERSION\" AS version,\n  lp.\"NAME\" AS project,\n  EXTRACT(DAY FROM NOW() - fa.\"ATTRIBUTED_ON\")::int AS age_days,\n  COALESCE(a.\"STATE\", 'NOT_SET') AS analysis_state\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\"\nLEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))\nORDER BY COALESCE(v.\"EPSSSCORE\", 0) DESC, v.\"SEVERITY\" ASC\nLIMIT 100",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 33 },
+      "id": 12,
+      "options": {
+        "content": "## Severity Breakdown by Project",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "stacking": { "mode": "normal" }, "fillOpacity": 80, "axisBorderShow": false },
+          "color": { "mode": "fixed" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "CRITICAL" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "HIGH" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "MEDIUM" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "LOW" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 35 },
+      "id": 13,
+      "options": {
+        "xField": "project",
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "showValue": "always",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Current Findings by Project & Severity",
+      "type": "barchart",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT\n  lp.\"NAME\" AS project,\n  COUNT(*) FILTER (WHERE v.\"SEVERITY\" = 'CRITICAL') AS \"CRITICAL\",\n  COUNT(*) FILTER (WHERE v.\"SEVERITY\" = 'HIGH') AS \"HIGH\",\n  COUNT(*) FILTER (WHERE v.\"SEVERITY\" = 'MEDIUM') AS \"MEDIUM\",\n  COUNT(*) FILTER (WHERE v.\"SEVERITY\" = 'LOW') AS \"LOW\"\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nLEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))\nGROUP BY lp.\"NAME\"\nORDER BY COUNT(*) FILTER (WHERE v.\"SEVERITY\" = 'CRITICAL') DESC, COUNT(*) DESC",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 45 },
+      "id": 14,
+      "options": {
+        "content": "## New Findings (Last 7 Days)",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "left", "cellOptions": { "type": "auto" }, "filterable": true },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "severity" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": {
+                  "CRITICAL": { "text": "CRITICAL", "color": "red" },
+                  "HIGH": { "text": "HIGH", "color": "orange" },
+                  "MEDIUM": { "text": "MEDIUM", "color": "yellow" },
+                  "LOW": { "text": "LOW", "color": "blue" }
+                }}
+              ]},
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "found_on" },
+            "properties": [
+              { "id": "unit", "value": "dateTimeAsIso" },
+              { "id": "custom.width", "value": 180 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "vuln_id" },
+            "properties": [
+              { "id": "custom.width", "value": 180 },
+              { "id": "links", "value": [
+                { "title": "Vulnerability Details", "url": "/d/vulnerability-detail/vulnerability-detail?var-cve=${__value.text}", "targetBlank": true }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "epss" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 2 },
+              { "id": "custom.width", "value": 100 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 47 },
+      "id": 15,
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "found_on", "desc": true }], "footer": { "show": true, "reducer": ["count"], "fields": ["vuln_id"] } },
+      "title": "Recently Discovered Findings",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT\n  v.\"VULNID\" AS vuln_id,\n  v.\"SEVERITY\" AS severity,\n  COALESCE(v.\"EPSSSCORE\", 0) AS epss,\n  c.\"NAME\" AS component,\n  c.\"VERSION\" AS version,\n  lp.\"NAME\" AS project,\n  fa.\"ATTRIBUTED_ON\" AS found_on\nFROM latest_project lp\nJOIN \"FINDINGATTRIBUTION\" fa ON fa.\"PROJECT_ID\" = lp.\"ID\"\nJOIN \"VULNERABILITY\" v ON v.\"ID\" = fa.\"VULNERABILITY_ID\"\nJOIN \"COMPONENT\" c ON c.\"ID\" = fa.\"COMPONENT_ID\"\nLEFT JOIN \"ANALYSIS\" a ON a.\"COMPONENT_ID\" = fa.\"COMPONENT_ID\" AND a.\"VULNERABILITY_ID\" = fa.\"VULNERABILITY_ID\" AND a.\"PROJECT_ID\" = lp.\"ID\"\nWHERE fa.\"ATTRIBUTED_ON\" > NOW() - INTERVAL '7 days'\n  AND (a.\"STATE\" IS NULL OR a.\"STATE\" NOT IN ('RESOLVED','FALSE_POSITIVE','NOT_AFFECTED'))\nORDER BY fa.\"ATTRIBUTED_ON\" DESC\nLIMIT 50",
+        "refId": "A"
+      }]
+    },
+
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 57 },
+      "id": 16,
+      "options": {
+        "content": "## Triage Progress",
+        "mode": "markdown"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "left", "cellOptions": { "type": "auto" }, "filterable": true },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "triage_pct" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 0 },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "basic" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "red", "value": null },
+                { "color": "orange", "value": 0.25 },
+                { "color": "yellow", "value": 0.5 },
+                { "color": "green", "value": 0.75 }
+              ]}},
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 1 },
+              { "id": "custom.width", "value": 200 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "project" },
+            "properties": [
+              { "id": "custom.width", "value": 250 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 59 },
+      "id": 17,
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "triage_pct", "desc": false }], "footer": { "show": false } },
+      "title": "Triage Progress by Project",
+      "type": "table",
+      "targets": [{
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "editorMode": "code", "format": "table", "rawQuery": true,
+        "rawSql": "WITH latest_project AS (\n  SELECT DISTINCT ON (p.\"NAME\") p.\"ID\", p.\"NAME\"\n  FROM \"PROJECT\" p\n  WHERE ('${project:raw}' = '$__all' OR p.\"NAME\" IN (${project:sqlstring}))\n  ORDER BY p.\"NAME\", p.\"LAST_BOM_IMPORTED\" DESC NULLS LAST\n)\nSELECT\n  lp.\"NAME\" AS project,\n  pm.\"FINDINGS_TOTAL\" AS total_findings,\n  pm.\"FINDINGS_AUDITED\" AS audited,\n  pm.\"FINDINGS_UNAUDITED\" AS unaudited,\n  CASE WHEN pm.\"FINDINGS_TOTAL\" > 0 THEN pm.\"FINDINGS_AUDITED\"::float / pm.\"FINDINGS_TOTAL\" ELSE 0 END AS triage_pct\nFROM latest_project lp\nJOIN \"PROJECTMETRICS\" pm ON pm.\"PROJECT_ID\" = lp.\"ID\"\n  AND pm.\"LAST_OCCURRENCE\" = (SELECT MAX(pm2.\"LAST_OCCURRENCE\") FROM \"PROJECTMETRICS\" pm2 WHERE pm2.\"PROJECT_ID\" = lp.\"ID\")\nWHERE pm.\"FINDINGS_TOTAL\" > 0\nORDER BY CASE WHEN pm.\"FINDINGS_TOTAL\" > 0 THEN pm.\"FINDINGS_AUDITED\"::float / pm.\"FINDINGS_TOTAL\" ELSE 0 END ASC",
+        "refId": "A"
+      }]
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "tags": ["security", "ci", "dependency-track"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "datasource": { "type": "grafana-postgresql-datasource", "uid": "P0DBEC7308BC872CD" },
+        "definition": "SELECT DISTINCT \"NAME\" FROM \"PROJECT\" ORDER BY \"NAME\"",
+        "includeAll": true,
+        "multi": true,
+        "name": "project",
+        "label": "Project",
+        "query": "SELECT DISTINCT \"NAME\" FROM \"PROJECT\" ORDER BY \"NAME\"",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "title": "CI Security Findings",
+  "uid": "ci-findings"
+}
